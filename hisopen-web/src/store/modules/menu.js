@@ -51,7 +51,7 @@ const actions = {
         routeArr.push(...lastRoute)
         commit('SET_ROUTES', routeArr)
         console.log(routeArr)
-        resolve(pushRouter)
+        resolve(routeArr)
       })
     })
   }

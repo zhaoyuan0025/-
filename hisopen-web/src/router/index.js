@@ -103,7 +103,7 @@ export const asyncRoutes = [
       },
       {
         path: 'dict',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/system/dict/type-list'),
         name: '/system/dict',
         meta: {
           title: '字典管理',
@@ -370,8 +370,9 @@ export const lastRoute = [
     hidden: true,
     children: [
       {
-        path: 'type/data/:dictId(\\d+)',
-        component: () => import('@/views/error-page/404'),
+        // \\d+ 正则，表示只能传数字
+        path: 'data/:dictId(\\d+)',
+        component: () => import('@/views/system/dict/data'),
         name: '/dict',
         meta: { title: '数据字典' }
       }
