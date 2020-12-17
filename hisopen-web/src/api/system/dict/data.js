@@ -22,7 +22,7 @@ export default {
       params: data
     })
   },
-  getDictData(dictId) { // 根据id查询
+  getDictDataById(dictId) { // 根据id查询
     return request({
       url: `/${group_name}/getDictData/${dictId}`,
       method: 'get'
@@ -34,7 +34,7 @@ export default {
       method: 'delete'
     })
   },
-  selectAllDictType() { // 根据id查询
+  selectAllDictType() { // 查询所有可用的类型
     return request({
       url: `/${group_name}/selectAllDictType`,
       method: 'get'

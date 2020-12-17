@@ -271,6 +271,7 @@ export default {
       typeApi.dictCacheAsync().then(res => {
         this.loading = true
         this.msgSuccess('缓存同步成功')
+        this.getTypeList()
       })
     },
     // 重置表单

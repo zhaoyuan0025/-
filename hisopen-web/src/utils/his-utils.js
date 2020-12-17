@@ -1,5 +1,4 @@
 // 项目通用方法的封装
-
 // 可以重置任何页面的表单
 export function resetForm(refName) {
   if (this.$refs[refName]) {

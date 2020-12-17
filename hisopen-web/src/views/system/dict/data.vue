@@ -100,20 +100,49 @@
     />
     <!-- 分页组件结束 -->
 
-    <!-- 添加弹窗的开始 -->
-    <el-drawer
-      title="添加"
-      :visible.sync="AddDrawer"
-      :direction="direction"
-    >
-      <data-add />
-    </el-drawer>
-    <!-- 添加弹窗的结束 -->
-
     <!-- 修改的弹窗的开始 -->
     <!-- 修改的弹窗的结束 -->
 
     <!-- 添加修改的弹窗的开始 -->
+    <el-dialog
+      :title="title"
+      :visible.sync="open"
+      width="500px"
+      center
+      append-to-body
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="字典类型" prop="dictType">
+          <el-input v-model="form.dictType" :disabled="true" size="small" />
+        </el-form-item>
+        <el-form-item label="数据标签" prop="dictLabel">
+          <el-input v-model="form.dictLabel" placeholder="请输入数据标签" clearable size="small" />
+        </el-form-item>
+        <el-form-item label="数据键值" prop="dictValue">
+          <el-input v-model="form.dictValue" placeholder="请输入数据键值" clearable size="small" />
+        </el-form-item>
+        <el-form-item label="排序显示" prop="dictSort">
+          <el-input-number v-model="form.dictSort" placeholder="请输入数据键值" clearable size="small" :min="0" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="form.status">
+            <el-radio
+              v-for="dict in statusOptions"
+              :key="dict.dictValue"
+              :label="dict.dictValue"
+              :value="dict.dictValue"
+            >{{ dict.dictLabel }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="form.remark" type="textarea" placeholder="请输入字典备注" clearable size="small" />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </span>
+    </el-dialog>
     <!-- 添加修改的弹窗的结束 -->
   </div>
 </template>
@@ -121,11 +150,11 @@
 <script>
 import dataApi from '@/api/system/dict/data'
 import typeApi from '@/api/system/dict/type'
-import dataAdd from './data-add'
+// import dataAdd from './data-add'
 export default {
-  components: {
-    dataAdd
-  },
+  // components: {
+  //   dataAdd
+  // },
   data() {
     return {
       // 遮罩层
@@ -174,10 +203,12 @@ export default {
   },
   created() {
     this.getDataList()
+
     // 使用全局的根据字典类型查询字典数据的方法查询字典数据 一进入页面加载状态
     this.getDataByType('sys_normal_disable').then(res => {
       this.statusOptions = res.data
     })
+
     // 取路由路径上的参数
     const dictId = this.$route.params && this.$route.params.dictId // 路由传参
     typeApi.getDictTypeById(dictId).then(res => {
@@ -185,6 +216,11 @@ export default {
       this.queryParams.dictType = res.data.dictType
       this.defaultDictType = res.data.dictType
       // 加载数据
+      this.getDataList()
+    })
+    // 部分也查询所有数据
+    typeApi.selectAllDictType().then(res => {
+      this.typeOptions = res.data
     })
     this.getType()
   },
@@ -240,8 +276,80 @@ export default {
       }
       this.resetForm('form')
     },
+    // 多选时触发
+    handleSelectionChnage(selection) {
+      this.ids = selection.map(item => item.dictCode)
+      this.single = selection.length !== 1
+      this.multiple = !selection.length
+    },
+    // 添加
     handleAdd() {
-      this.AddDrawer = true
+      this.open = true
+      // 重置表单
+      this.reset()
+      this.form.dictType = this.defaultDictType
+    },
+    // 修改
+    handleUpdate(row) {
+      this.open = true
+      this.reset()
+      const dictCode = row.dictCode || this.ids
+      // 根据字典数据id查询字典数据
+      dataApi.getDictDataById(dictCode).then(res => {
+        this.form = res.data
+      })
+    },
+    // 删除
+    handleDelete(row) {
+      const dictCodes = row.dictCode || this.ids
+      this.$confirm('此操作将永久删除该字典数据, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        dataApi.deleteByIds(dictCodes).then(res => {
+          this.loading = false
+          this.msgSuccess('删除成功')
+          this.getDataList()// 全查询
+        })
+      }).catch(() => {
+        this.msgError('删除已取消')
+        this.loading = false
+      })
+    },
+    // 添加或者修改
+    handleSubmit() {
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          // 做添加
+          this.loading = true
+          if (this.form.dictCode === undefined) {
+            dataApi.addDictData(this.form).then(res => {
+              console.log(this.form)
+              this.msgSuccess('保存成功')
+              this.loading = false
+              this.getDataList()// 列表重新查询
+              this.open = false// 关闭弹出层
+            }).catch(() => {
+              this.loading = false
+            })
+          } else { // 做修改
+            dataApi.updateDictData(this.form).then(res => {
+              this.msgSuccess('修改成功')
+              this.loading = false
+              this.getDataList()// 列表重新查询
+              this.open = false// 关闭弹出层
+            }).catch(() => {
+              this.loading = false
+            })
+          }
+        }
+      })
+    },
+    // 关闭弹窗显示
+    cancel() {
+      this.open = false
     }
   }
 
