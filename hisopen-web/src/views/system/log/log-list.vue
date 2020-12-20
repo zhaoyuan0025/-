@@ -184,6 +184,17 @@ export default {
   },
   // 加载页面时加载数据
   created() {
+    // 加载查询的条件
+    this.getDataByType('sys_normal_disable').then(res => {
+      this.statusOptions = res.data
+    })
+
+    // 加载操作类型
+    this.getDataByType('sys_oper_type').then(res => {
+      this.businessTypeOptions = res.data
+    })
+
+    // 进入页面加载数据
     this.getOperLogList()
   },
   methods: {
@@ -195,7 +206,23 @@ export default {
         this.loading = false
       })
     },
+
+    // 分页的数据监听显示
+    handleSizeChange(val) {
+      this.queryParams.pageSize = val
+      this.getOperLogList()
+    },
+    // 页码的变化
+    handleCurrentChange(val) {
+      this.queryParams.pageNum = val
+      this.getOperLogList()
+    },
+    // 模糊查询
     handleQuery() {
+      this.getOperLogList()
+    },
+    // 删除
+    handleDelete() {
 
     }
   }
