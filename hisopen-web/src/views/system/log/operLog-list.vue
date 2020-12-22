@@ -221,13 +221,77 @@ export default {
     handleQuery() {
       this.getOperLogList()
     },
-    // 删除
-    handleDelete() {
 
+    // 重置表单
+    restQuery() {
+      this.dateRange = []
+      this.resetForm('queryForm')
+      this.getOperLogList()
+    },
+
+    // 翻译状态
+    statusFormatter(row) {
+      return this.selectDictLabel(this.statusOptions, row.status)
+    },
+
+    // 翻译业务类型
+    businessTypeFormatter(row) {
+      return this.selectDictLabel(this.businessTypeOptions, row.businessType)
+    },
+
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.infoId)
+      this.multiple = !selection.length
+    },
+    // 删除
+    handleDelete(row) {
+      const tx = this
+      const operIds = row.operId || this.ids
+      this.$confirm('是否确认删除操作日志ID为:' + operIds + '的数据?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        operLogApi.deleteByIds(operIds).then(res => {
+          tx.msgSuccess('删除成功')
+          tx.getOperLogList()// 全查询
+        })
+      }).catch(function() {
+        tx.msgError('操作已取消')
+      })
+    },
+    // 清空数据
+    handleClearInfo() {
+      const tx = this
+      this.$confirm('是否确认清空登陆日志的数据?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(function() {
+        operLogApi.deleteAll().then(res => {
+          tx.msgSuccess('删除成功')
+          tx.getOperLogList()// 全查询
+        })
+      }).catch(function() {
+        tx.msgError('操作已取消')
+      })
     }
+
   }
 }
 </script>
 <style scoped>
+.demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
 
 </style>
