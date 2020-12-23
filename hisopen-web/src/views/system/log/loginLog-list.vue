@@ -182,7 +182,73 @@ export default {
         this.total = res.total
         this.loading = false
       })
+    },
+    // 重置表单
+    resetQuery() {
+      this.dateRange = []
+      this.resetForm('queryForm')
+      this.getOperLogList()
+    },
+    // 每页显示多少条的数据变化
+    handleSizeChange(val) {
+      this.queryParams.pageSize = val
+      this.getLoginInfoList()
+    },
+    // 分页跳转
+    handleCurrentChange(val) {
+      this.queryParams.pageNum = val
+      this.getLoginInfoList()
+    },
+    // 模糊查询
+    handleQuery() {
+      this.queryParams.pageNum = 1
+      this.getLoginInfoList()
+    },
+    // 多选框选中数据
+    handleSelectionChange(row) {
+      this.ids = row.map(item => item.infoId)
+      this.multiple = !row.length
+    },
+    // 翻译登陆状态
+    statusFormatter(row) {
+      return this.selectDictLabel(this.statusOptions, row.loginStatus)
+    },
+    // 翻译登陆类型
+    loginTypeFormatter(row) {
+      return this.selectDictLabel(this.loginTypeOptions, row.loginType)
+    },
+    // 删除
+    handleDelete(row) {
+      const tx = this
+      const logIds = row.infoId || this.ids
+      this.$confirm('是否确认删除登陆日志ID为:' + logIds + '的数据?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(function() {
+        loginInfoApi.deleteByIds(logIds).then(res => {
+          tx.getLoginInfoList()
+          tx.msgSuccess('删除成功')
+        })
+      }).catch(function() {
+        tx.msgSuccess('删除已取消')
+      })
+    },
+    // 清空
+    handleClearInfo() {
+      const tx = this
+      this.$confirm('是否确认清空登陆日志的数据?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(function() {
+        loginInfoApi.deleteAll().then(res => {
+          tx.getLoginInfoList()
+          tx.msgSuccess('清空成功')
+        })
+      }).catch(function() {
+        tx.msgSuccess('删除失败')
+      })
     }
+
   }
 }
 </script>

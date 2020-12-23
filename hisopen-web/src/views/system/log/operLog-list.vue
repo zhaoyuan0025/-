@@ -223,7 +223,7 @@ export default {
     },
 
     // 重置表单
-    restQuery() {
+    resetQuery() {
       this.dateRange = []
       this.resetForm('queryForm')
       this.getOperLogList()
